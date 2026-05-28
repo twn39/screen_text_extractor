@@ -1,10 +1,12 @@
-# screen_text_extractor
+<h1 align="center">screen_text_extractor</h1>
 
-A powerful, high-performance Flutter plugin for desktop applications (**macOS, Windows, Linux**) to extract text from the screen. It features native accessibility-based selection grabbing (with zero clipboard pollution) and a robust copy-simulation fallback with automatic clipboard restoration.
+<p align="center">
+  <a href="./README.md">English</a> | <a href="./README-ZH.md">简体中文</a>
+</p>
 
 ---
 
-[English](./README.md) | [简体中文](./README-ZH.md)
+A powerful, high-performance Flutter plugin for desktop applications (**macOS, Windows, Linux**) to extract text from the screen. It features native accessibility-based selection grabbing (with zero clipboard pollution) and a robust copy-simulation fallback with automatic clipboard restoration.
 
 ---
 

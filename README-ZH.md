@@ -1,10 +1,12 @@
-# screen_text_extractor
+<h1 align="center">screen_text_extractor</h1>
 
-一个专为 Flutter 桌面端应用（**macOS, Windows, Linux**）打造的强大屏幕文本提取插件。支持基于系统辅助功能（Accessibility）的零剪贴板污染全局划词取词，以及带剪贴板历史自动恢复的安全复制模拟双通道兜底机制。
+<p align="center">
+  <a href="./README.md">English</a> | <a href="./README-ZH.md">简体中文</a>
+</p>
 
 ---
 
-[English](./README.md) | [简体中文](./README-ZH.md)
+一个专为 Flutter 桌面端应用（**macOS, Windows, Linux**）打造的强大屏幕文本提取插件。支持基于系统辅助功能（Accessibility）的零剪贴板污染全局划词取词，以及带剪贴板历史自动恢复的安全复制模拟双通道兜底机制。
 
 ---
 
