@@ -8,6 +8,8 @@
 #include <flutter/standard_method_codec.h>
 
 #include <map>
+#include <uiautomation.h>
+#include <wrl/client.h>
 
 namespace
 {
@@ -23,6 +25,9 @@ class ScreenTextExtractorPlugin : public flutter::Plugin
   private:
     flutter::PluginRegistrarWindows *registrar;
     void ScreenTextExtractorPlugin::SimulateCtrlCKeyPress(
+        const flutter::MethodCall<flutter::EncodableValue> &method_call,
+        std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);
+    void ScreenTextExtractorPlugin::ExtractFromAccessibility(
         const flutter::MethodCall<flutter::EncodableValue> &method_call,
         std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);
     // Called when a method is called on this plugin's channel from Dart.
@@ -93,12 +98,119 @@ void ScreenTextExtractorPlugin::SimulateCtrlCKeyPress(
     result->Success(flutter::EncodableValue(true));
 }
 
+std::wstring ExtractFromUIAutomation()
+{
+    HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+    bool shouldUninitialize = SUCCEEDED(hr);
+
+    Microsoft::WRL::ComPtr<IUIAutomation> uia;
+    hr = CoCreateInstance(CLSID_CUIAutomation, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&uia));
+    if (FAILED(hr))
+    {
+        if (shouldUninitialize)
+            CoUninitialize();
+        return L"";
+    }
+
+    Microsoft::WRL::ComPtr<IUIAutomationElement> focusedElement;
+    hr = uia->GetFocusedElement(&focusedElement);
+    if (FAILED(hr) || !focusedElement)
+    {
+        if (shouldUninitialize)
+            CoUninitialize();
+        return L"";
+    }
+
+    Microsoft::WRL::ComPtr<IUnknown> pattern;
+    hr = focusedElement->GetCurrentPattern(UIA_TextPatternId, &pattern);
+    if (FAILED(hr) || !pattern)
+    {
+        if (shouldUninitialize)
+            CoUninitialize();
+        return L"";
+    }
+
+    Microsoft::WRL::ComPtr<IUIAutomationTextPattern> textPattern;
+    hr = pattern.As(&textPattern);
+    if (FAILED(hr))
+    {
+        if (shouldUninitialize)
+            CoUninitialize();
+        return L"";
+    }
+
+    Microsoft::WRL::ComPtr<IUIAutomationTextRangeArray> selectionArray;
+    hr = textPattern->GetSelection(&selectionArray);
+    if (FAILED(hr) || !selectionArray)
+    {
+        if (shouldUninitialize)
+            CoUninitialize();
+        return L"";
+    }
+
+    int count = 0;
+    selectionArray->get_Length(&count);
+    if (count == 0)
+    {
+        if (shouldUninitialize)
+            CoUninitialize();
+        return L"";
+    }
+
+    Microsoft::WRL::ComPtr<IUIAutomationTextRange> range;
+    hr = selectionArray->GetElement(0, &range);
+    if (FAILED(hr) || !range)
+    {
+        if (shouldUninitialize)
+            CoUninitialize();
+        return L"";
+    }
+
+    BSTR textBstr;
+    hr = range->GetText(-1, &textBstr);
+    if (FAILED(hr) || !textBstr)
+    {
+        if (shouldUninitialize)
+            CoUninitialize();
+        return L"";
+    }
+
+    std::wstring result(textBstr);
+    SysFreeString(textBstr);
+
+    if (shouldUninitialize)
+        CoUninitialize();
+    return result;
+}
+
+void ScreenTextExtractorPlugin::ExtractFromAccessibility(
+    const flutter::MethodCall<flutter::EncodableValue> &method_call,
+    std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result)
+{
+    std::wstring text = ExtractFromUIAutomation();
+    if (!text.empty())
+    {
+        int size_needed = WideCharToMultiByte(CP_UTF8, 0, &text[0], (int)text.size(), NULL, 0, NULL, NULL);
+        std::string utf8_text(size_needed, 0);
+        WideCharToMultiByte(CP_UTF8, 0, &text[0], (int)text.size(), &utf8_text[0], size_needed, NULL, NULL);
+        result->Success(flutter::EncodableValue(utf8_text));
+    }
+    else
+    {
+        result->Success(flutter::EncodableValue());
+    }
+}
+
 void ScreenTextExtractorPlugin::HandleMethodCall(const flutter::MethodCall<flutter::EncodableValue> &method_call,
                                                  std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result)
 {
     if (method_call.method_name().compare("simulateCtrlCKeyPress") == 0)
     {
         SimulateCtrlCKeyPress(method_call, std::move(result));
+    }
+    else if (method_call.method_name().compare("extractFromAccessibility") == 0)
+    {
+        ExtractFromAccessibility(method_call, std::move(result));
     }
     else
     {

@@ -20,9 +20,46 @@ public class ScreenTextExtractorPlugin: NSObject, FlutterPlugin {
         case "simulateCtrlCKeyPress":
             simulateCtrlCKeyPress(call, result: result)
             break
+        case "extractFromAccessibility":
+            extractFromAccessibility(call, result: result)
+            break
         default:
             result(FlutterMethodNotImplemented)
         }
+    }
+    
+    public func extractFromAccessibility(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let systemWideElement = AXUIElementCreateSystemWide()
+        var focusedElement: CFTypeRef?
+        let error = AXUIElementCopyAttributeValue(systemWideElement, kAXFocusedUIElementAttribute as CFString, &focusedElement)
+        
+        if error == .success, let element = focusedElement {
+            var selectedTextValue: CFTypeRef?
+            let textError = AXUIElementCopyAttributeValue(element as! AXUIElement, kAXSelectedTextAttribute as CFString, &selectedTextValue)
+            
+            if textError == .success, let text = selectedTextValue as? String, !text.isEmpty {
+                result(text)
+                return
+            }
+            
+            // Fallback for composite controls (like WebViews) where selected range is needed
+            var rangeValue: CFTypeRef?
+            let rangeError = AXUIElementCopyAttributeValue(element as! AXUIElement, kAXSelectedTextRangeAttribute as CFString, &rangeValue)
+            if rangeError == .success, let range = rangeValue {
+                var stringValue: CFTypeRef?
+                let stringError = AXUIElementCopyParameterizedAttributeValue(
+                    element as! AXUIElement,
+                    kAXStringForRangeParameterizedAttribute as CFString,
+                    range,
+                    &stringValue
+                )
+                if stringError == .success, let text = stringValue as? String, !text.isEmpty {
+                    result(text)
+                    return
+                }
+            }
+        }
+        result(nil)
     }
     
     public func isAccessAllowed(_ call: FlutterMethodCall, result: @escaping FlutterResult) {

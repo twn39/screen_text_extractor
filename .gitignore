@@ -1,7 +1,52 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
 .DS_Store
+.atom/
+.buildlog/
+.history
+.project
+.directory
+.trash/
+.fvm/
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Flutter/Dart related
 .dart_tool/
-
 .packages
+.pub-cache/
 .pub/
-
 build/
+/doc/api/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Windows related
+[Dd]ebug/
+[Rr]elease/
+x64/
+*.user
+*.suo
+*.sln
+*.db
+*.opendb
+
+# macOS/iOS related
+*.mode1v3
+*.mode2v3
+*.nib
+*.pbxuser
+*.perspectivev3
+*.xcworkspace
+!default.xcworkspace
+xcuserdata/
+*sync/
+.xcworkspace/
+Pods/
+Podfile.lock
