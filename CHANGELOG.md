@@ -1,3 +1,9 @@
+## 1.0.0
+
+* Bump version to 1.0.0
+* Remove badges from README files
+* Update installation documentation to point to GitHub repository
+
 ## 0.1.3
 
 * chore: bump flutter 3.10.0 & bump clipboard_watcher to 0.2.0

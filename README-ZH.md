@@ -1,18 +1,6 @@
-> **🚀 快速发布您的应用**: 试试 [Fastforge](https://fastforge.dev) - 构建、打包和分发您的 Flutter 应用最简单的方式。
-
 # screen_text_extractor
 
-[![pub version][pub-image]][pub-url] [![][discord-image]][discord-url] ![][visits-count-image] 
-
-[pub-image]: https://img.shields.io/pub/v/screen_text_extractor.svg
-[pub-url]: https://pub.dev/packages/screen_text_extractor
-
-[discord-image]: https://img.shields.io/discord/884679008049037342.svg
-[discord-url]: https://discord.gg/zPa6EZ2jqb
-
-[visits-count-image]: https://img.shields.io/badge/dynamic/json?label=Visits%20Count&query=value&url=https://api.countapi.xyz/hit/leanflutter.screen_text_extractor/visits
-
-这个插件允许 Flutter 桌面应用从屏幕上提取文本。
+一个功能强大的 Flutter 桌面应用（macOS、Windows、Linux）屏幕文本提取插件。支持无剪贴板污染的全局划词取词与安全的复制模拟兜底机制。
 
 ---
 
@@ -20,20 +8,21 @@
 
 ---
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+## 功能特性与取词管道
 
-- [screen_text_extractor](#screen_text_extractor)
-  - [平台支持](#平台支持)
-  - [快速开始](#快速开始)
-    - [安装](#安装)
-    - [用法](#用法)
-  - [谁在用使用它？](#谁在用使用它)
-  - [API](#api)
-    - [ScreenTextExtractor](#screentextextractor)
-  - [许可证](#许可证)
+与简单的按键模拟脚本不同，`screen_text_extractor` 在 macOS 和 Windows 上实现了一套健壮的**双通道屏幕取词机制**，提供卓越的原生取词体验：
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+1. **第一通道：系统辅助功能 API（零剪贴板污染）**
+   - **macOS**：利用 ApplicationServices 的 `AXUIElement` 框架检查当前焦点的 UI 节点树，直接读取选中的 `kAXSelectedTextAttribute` 属性。
+   - **Windows**：利用 Microsoft UI Automation (UIA) COM 接口，读取 `IUIAutomationTextPattern` 活跃选区中的文本。
+   - *此过程完全不修改、不污染系统剪贴板。*
+2. **第二通道：按键模拟复制兜底（带剪贴板自动恢复）**
+   - 如果目标应用没有完整实现系统可访问性协议（如某些自定义 Canvas 或游戏等），插件会自动回退到模拟按下 `Ctrl+C` (或 `Cmd+C`)。
+   - 在读取到剪贴板的变化内容后，会立刻异步调度任务**恢复用户原有的剪贴板内容**，保证用户复制的历史记录不丢失。
+3. **Linux 平台支持**
+   - 直接读取 X11/GTK 的主选择区（`GDK_SELECTION_PRIMARY`）。在 Linux 系统中，鼠标划选的文字会自动进入该选区中，因此也是原生实现，完全不污染普通剪贴板。
+
+---
 
 ## 平台支持
 
@@ -41,25 +30,19 @@
 | :---: | :---: | :-----: |
 |   ✔️   |   ✔️   |    ✔️    |
 
+---
+
 ## 快速开始
 
 ### 安装
 
-将此添加到你的软件包的 pubspec.yaml 文件：
-
-```yaml
-dependencies:
-  screen_text_extractor: ^0.1.3
-```
-
-或
+将此添加到你的软件包的 `pubspec.yaml` 文件中：
 
 ```yaml
 dependencies:
   screen_text_extractor:
     git:
-      url: https://github.com/leanflutter/screen_text_extractor.git
-      ref: main
+      url: https://github.com/twn39/screen_text_extractor.git
 ```
 
 ### 用法
@@ -67,28 +50,55 @@ dependencies:
 ```dart
 import 'package:screen_text_extractor/screen_text_extractor.dart';
 
-ExtractedData data;
+// 1. 从系统剪贴板中提取纯文本
+ExtractedData? data = await screenTextExtractor.extract(
+  mode: ExtractMode.clipboard,
+);
 
-data = await ScreenTextExtractor.instance.extractFromClipboard();
-data = await ScreenTextExtractor.instance.extractFromScreenSelection();
+// 2. 从屏幕选区中划词提取文本（双通道）
+ExtractedData? data = await screenTextExtractor.extract(
+  mode: ExtractMode.screenSelection,
+);
+
+print(data?.text);
 ```
 
-> 请看这个插件的示例应用，以了解完整的例子。
+> **macOS 注意事项**：使用划词提取功能需要系统授予**辅助功能权限（Accessibility）**。您可以使用以下内置的帮助方法来检测和申请该权限。
+
+```dart
+// 检查 macOS 辅助功能是否已授权
+bool allowed = await screenTextExtractor.isAccessAllowed();
+
+if (!allowed) {
+  // 申请访问（会自动打开 macOS 辅助功能系统设置面板）
+  await screenTextExtractor.requestAccess();
+}
+```
+
+---
 
 ## 谁在用使用它？
 
 - [Biyi (比译)](https://biyidev.com/) - 一个便捷的翻译和词典应用。
 
-## API
+---
 
-### ScreenTextExtractor
+## API 参考
 
-| Method                     | Description  | Linux | MacOS | Windows |
-| -------------------------- | ------------ | ----- | ----- | ------- |
-| isAccessAllowed            | `macOS` only | ➖     | ✔️     | ➖       |
-| requestAccess              | `macOS` only | ➖     | ✔️     | ➖       |
-| extractFromClipboard       |              | ✔️     | ✔️     | ✔️       |
-| extractFromScreenSelection |              | ✔️     | ✔️     | ✔️       |
+### 方法
+
+| 方法 | 返回类型 | 描述 | Linux | macOS | Windows |
+| :--- | :--- | :--- | :---: | :---: | :---: |
+| `isAccessAllowed()` | `Future<bool>` | 仅限 macOS，检查辅助功能权限是否通过。 | ➖ | ✔️ | ➖ |
+| `requestAccess(...)` | `Future<void>` | 仅限 macOS，触发授权弹窗或直接打开隐私设置面板。 | ➖ | ✔️ | ➖ |
+| `extract(...)` | `Future<ExtractedData?>` | 通过剪贴板（`clipboard`）或屏幕选区（`screenSelection`）提取文本。 | ✔️ | ✔️ | ✔️ |
+
+### 数据模型
+
+#### `ExtractedData`
+* `text`: 从屏幕选区或剪贴板中成功提取出的文本内容。
+
+---
 
 ## 许可证
 

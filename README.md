@@ -1,18 +1,6 @@
-> **🚀 Ship Your App Faster**: Try [Fastforge](https://fastforge.dev) - The simplest way to build, package and distribute your Flutter apps.
-
 # screen_text_extractor
 
-[![pub version][pub-image]][pub-url] [![][discord-image]][discord-url] ![][visits-count-image] 
-
-[pub-image]: https://img.shields.io/pub/v/screen_text_extractor.svg
-[pub-url]: https://pub.dev/packages/screen_text_extractor
-
-[discord-image]: https://img.shields.io/discord/884679008049037342.svg
-[discord-url]: https://discord.gg/zPa6EZ2jqb
-
-[visits-count-image]: https://img.shields.io/badge/dynamic/json?label=Visits%20Count&query=value&url=https://api.countapi.xyz/hit/leanflutter.screen_text_extractor/visits
-
-This plugin allows Flutter desktop apps to extract text from screen.
+A powerful Flutter plugin for desktop applications (macOS, Windows, Linux) to extract text from the screen, support selection-grabbing with zero clipboard pollution, and safe copy simulation fallbacks.
 
 ---
 
@@ -20,20 +8,21 @@ English | [简体中文](./README-ZH.md)
 
 ---
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+## Features & Extraction Pipeline
 
-- [screen_text_extractor](#screen_text_extractor)
-  - [Platform Support](#platform-support)
-  - [Quick Start](#quick-start)
-    - [Installation](#installation)
-    - [Usage](#usage)
-  - [Who's using it?](#whos-using-it)
-  - [API](#api)
-    - [ScreenTextExtractor](#screentextextractor)
-  - [License](#license)
+Unlike naive keypress-simulation scripts, `screen_text_extractor` implements a robust **dual-channel extraction pipeline** for macOS and Windows to provide a seamless native experience:
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+1. **Channel 1: OS Accessibility APIs (Zero Clipboard Pollution)**
+   - **macOS**: Utilizes the ApplicationServices `AXUIElement` framework to inspect the focused UI tree and read selected text parameters directly.
+   - **Windows**: Utilizes Microsoft UI Automation (UIA) COM APIs to read the `IUIAutomationTextPattern` selection range.
+   - *This process does not alter the system clipboard at all.*
+2. **Channel 2: Copy-Simulation Fallback (With Clipboard Restore)**
+   - If an application does not expose its selection to OS Accessibility trees, the plugin falls back to simulating a `Ctrl+C` (or `Cmd+C`) keypress.
+   - It reads the temporary clipboard change, and immediately schedules a delayed task to **restore the user's original clipboard content**, ensuring no text is lost.
+3. **Linux Support**
+   - Directly reads from X11/GTK's `GDK_SELECTION_PRIMARY` (Primary Selection buffer), which natively retrieves highlighted text without polluting the system clipboard.
+
+---
 
 ## Platform Support
 
@@ -41,25 +30,19 @@ English | [简体中文](./README-ZH.md)
 | :---: | :---: | :-----: |
 |   ✔️   |   ✔️   |    ✔️    |
 
+---
+
 ## Quick Start
 
 ### Installation
 
-Add this to your package's pubspec.yaml file:
-
-```yaml
-dependencies:
-  screen_text_extractor: ^0.1.3
-```
-
-Or
+Add `screen_text_extractor` to your `pubspec.yaml` dependencies:
 
 ```yaml
 dependencies:
   screen_text_extractor:
     git:
-      url: https://github.com/leanflutter/screen_text_extractor.git
-      ref: main
+      url: https://github.com/twn39/screen_text_extractor.git
 ```
 
 ### Usage
@@ -67,28 +50,55 @@ dependencies:
 ```dart
 import 'package:screen_text_extractor/screen_text_extractor.dart';
 
-ExtractedData data;
+// 1. Extract plain text from clipboard
+ExtractedData? data = await screenTextExtractor.extract(
+  mode: ExtractMode.clipboard,
+);
 
-data = await ScreenTextExtractor.instance.extractFromClipboard();
-data = await ScreenTextExtractor.instance.extractFromScreenSelection();
+// 2. Extract highlighted text from screen selection (Dual-Channel)
+ExtractedData? data = await screenTextExtractor.extract(
+  mode: ExtractMode.screenSelection,
+);
+
+print(data?.text);
 ```
 
-> Please see the example app of this plugin for a full example.
+> **Note on macOS**: Grabbing selection text requires **Accessibility permissions** from the OS. Use the built-in helper methods below to verify and request access.
+
+```dart
+// Check macOS accessibility trust
+bool allowed = await screenTextExtractor.isAccessAllowed();
+
+if (!allowed) {
+  // Request access (opens macOS System Preference Pane)
+  await screenTextExtractor.requestAccess();
+}
+```
+
+---
 
 ## Who's using it?
 
 - [Biyi (比译)](https://biyidev.com/) - A convenient translation and dictionary app.
 
-## API
+---
 
-### ScreenTextExtractor
+## API Reference
 
-| Method                     | Description  | Linux | MacOS | Windows |
-| -------------------------- | ------------ | ----- | ----- | ------- |
-| isAccessAllowed            | `macOS` only | ➖     | ✔️     | ➖       |
-| requestAccess              | `macOS` only | ➖     | ✔️     | ➖       |
-| extractFromClipboard       |              | ✔️     | ✔️     | ✔️       |
-| extractFromScreenSelection |              | ✔️     | ✔️     | ✔️       |
+### Methods
+
+| Method | Return Type | Description | Linux | macOS | Windows |
+| :--- | :--- | :--- | :---: | :---: | :---: |
+| `isAccessAllowed()` | `Future<bool>` | Checks if macOS Accessibility permissions are trusted. | ➖ | ✔️ | ➖ |
+| `requestAccess(...)` | `Future<void>` | Prompts accessibility request dialog or opens System Preference Pane. | ➖ | ✔️ | ➖ |
+| `extract(...)` | `Future<ExtractedData?>` | Extracts text using `ExtractMode.clipboard` or `ExtractMode.screenSelection`. | ✔️ | ✔️ | ✔️ |
+
+### Data Models
+
+#### `ExtractedData`
+* `text`: The string content retrieved from the screen selection or clipboard.
+
+---
 
 ## License
 
