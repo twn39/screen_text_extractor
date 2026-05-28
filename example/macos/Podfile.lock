@@ -2,8 +2,8 @@ PODS:
   - clipboard_watcher (0.0.1):
     - FlutterMacOS
   - FlutterMacOS (1.0.0)
-  - HotKey (0.1.2)
-  - hotkey_manager (0.0.1):
+  - HotKey (0.2.1)
+  - hotkey_manager_macos (0.0.1):
     - FlutterMacOS
     - HotKey
   - screen_text_extractor (0.1.0):
@@ -12,7 +12,7 @@ PODS:
 DEPENDENCIES:
   - clipboard_watcher (from `Flutter/ephemeral/.symlinks/plugins/clipboard_watcher/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
-  - hotkey_manager (from `Flutter/ephemeral/.symlinks/plugins/hotkey_manager/macos`)
+  - hotkey_manager_macos (from `Flutter/ephemeral/.symlinks/plugins/hotkey_manager_macos/macos`)
   - screen_text_extractor (from `Flutter/ephemeral/.symlinks/plugins/screen_text_extractor/macos`)
 
 SPEC REPOS:
@@ -24,18 +24,18 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/clipboard_watcher/macos
   FlutterMacOS:
     :path: Flutter/ephemeral
-  hotkey_manager:
-    :path: Flutter/ephemeral/.symlinks/plugins/hotkey_manager/macos
+  hotkey_manager_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/hotkey_manager_macos/macos
   screen_text_extractor:
     :path: Flutter/ephemeral/.symlinks/plugins/screen_text_extractor/macos
 
 SPEC CHECKSUMS:
-  clipboard_watcher: a71da520051c24c1b969a411b3e152d4dcc93ca5
-  FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
-  HotKey: ad59450195936c10992438c4210f673de5aee43e
-  hotkey_manager: ad673457691f4d39e481be04a61da2ae07d81c62
-  screen_text_extractor: 2c310f54af1dee881522e2b76bec9a668ebfe0cf
+  clipboard_watcher: e9c9d88b3aea4889fe80025037e690e73600b160
+  FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
+  HotKey: 400beb7caa29054ea8d864c96f5ba7e5b4852277
+  hotkey_manager_macos: a4317849af96d2430fa89944d3c58977ca089fbe
+  screen_text_extractor: a23062e637bc69e2737476011ef192e2a77cb2f5
 
-PODFILE CHECKSUM: 353c8bcc5d5b0994e508d035b5431cfe18c1dea7
+PODFILE CHECKSUM: 0d3963a09fc94f580682bd88480486da345dc3f0
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.16.2

@@ -4,7 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   clipboard_watcher
-  hotkey_manager
+  hotkey_manager_windows
   screen_text_extractor
 )
 

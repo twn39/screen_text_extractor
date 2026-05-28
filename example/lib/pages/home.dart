@@ -2,6 +2,7 @@
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:preference_list/preference_list.dart';
 import 'package:screen_text_extractor/screen_text_extractor.dart';
@@ -10,12 +11,12 @@ final hotKeyManager = HotKeyManager.instance;
 final screenTextExtractor = ScreenTextExtractor.instance;
 
 final kShortcutExtractFromClipboard =
-    HotKey(KeyCode.keyZ, modifiers: [KeyModifier.alt]);
+    HotKey(key: PhysicalKeyboardKey.keyZ, modifiers: [HotKeyModifier.alt]);
 final kShortcutExtractFromScreenSelection =
-    HotKey(KeyCode.keyX, modifiers: [KeyModifier.alt]);
+    HotKey(key: PhysicalKeyboardKey.keyX, modifiers: [HotKeyModifier.alt]);
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
