@@ -1,38 +1,40 @@
 # screen_text_extractor
 
-一个功能强大的 Flutter 桌面应用（macOS、Windows、Linux）屏幕文本提取插件。支持无剪贴板污染的全局划词取词与安全的复制模拟兜底机制。
+一个专为 Flutter 桌面端应用（**macOS, Windows, Linux**）打造的强大屏幕文本提取插件。支持基于系统辅助功能（Accessibility）的零剪贴板污染全局划词取词，以及带剪贴板历史自动恢复的安全复制模拟双通道兜底机制。
 
 ---
 
-[English](./README.md) | 简体中文
+[English](./README.md) | [简体中文](./README-ZH.md)
 
 ---
 
-## 功能特性与取词管道
+## 🚀 功能特性与双通道取词管道
 
-与简单的按键模拟脚本不同，`screen_text_extractor` 在 macOS 和 Windows 上实现了一套健壮的**双通道屏幕取词机制**，提供卓越的原生取词体验：
+与简单的按键模拟脚本不同，`screen_text_extractor` 在各平台实现了一套专业的**双通道屏幕取词管道**，提供卓越的原生体验：
 
-1. **第一通道：系统辅助功能 API（零剪贴板污染）**
-   - **macOS**：利用 ApplicationServices 的 `AXUIElement` 框架检查当前焦点的 UI 节点树，直接读取选中的 `kAXSelectedTextAttribute` 属性。
-   - **Windows**：利用 Microsoft UI Automation (UIA) COM 接口，读取 `IUIAutomationTextPattern` 活跃选区中的文本。
-   - *此过程完全不修改、不污染系统剪贴板。*
-2. **第二通道：按键模拟复制兜底（带剪贴板自动恢复）**
-   - 如果目标应用没有完整实现系统可访问性协议（如某些自定义 Canvas 或游戏等），插件会自动回退到模拟按下 `Ctrl+C` (或 `Cmd+C`)。
-   - 在读取到剪贴板的变化内容后，会立刻异步调度任务**恢复用户原有的剪贴板内容**，保证用户复制的历史记录不丢失。
-3. **Linux 平台支持**
-   - 直接读取 X11/GTK 的主选择区（`GDK_SELECTION_PRIMARY`）。在 Linux 系统中，鼠标划选的文字会自动进入该选区中，因此也是原生实现，完全不污染普通剪贴板。
+### 1. 第一通道：系统辅助功能 API（零剪贴板污染）
+* **macOS**：利用 ApplicationServices 的 `AXUIElement` 框架检查当前焦点的 UI 节点树，直接读取选中的 `kAXSelectedTextAttribute` 属性。
+* **Windows**：利用 Microsoft UI Automation (UIA) COM 接口，读取 `IUIAutomationTextPattern` 活跃选区中的文本。
+* *此原生过程完全不修改、不污染系统剪贴板。*
+
+### 2. 第二通道：按键模拟复制兜底（带剪贴板自动恢复）
+* 如果目标应用没有完整实现系统可访问性协议（如某些自定义 Canvas 或游戏等），插件会自动回退到模拟按下 `Ctrl+C` (或 `Cmd+C`)。
+* 在读取到剪贴板的变化内容后，会立刻异步调度任务**恢复用户原有的剪贴板内容**，保证用户原有的复制历史记录不丢失。
+
+### 3. 原生 Linux 支持
+* 直接读取 X11/GTK 的主选择区（`GDK_SELECTION_PRIMARY`）。在 Linux 系统中，鼠标划选的文字会自动进入该选区中，因此也是原生实现，完全不污染普通剪贴板。
 
 ---
 
-## 平台支持
+## 💻 平台支持
 
 | Linux | macOS | Windows |
 | :---: | :---: | :-----: |
-|   ✔️   |   ✔️   |    ✔️    |
+|   ✔️ 完美支持   |   ✔️ 完美支持   |    ✔️ 完美支持    |
 
 ---
 
-## 快速开始
+## 🛠️ 快速开始
 
 ### 安装
 
@@ -45,7 +47,7 @@ dependencies:
       url: https://github.com/twn39/screen_text_extractor.git
 ```
 
-### 用法
+### 用法示例
 
 ```dart
 import 'package:screen_text_extractor/screen_text_extractor.dart';
@@ -63,7 +65,7 @@ ExtractedData? data = await screenTextExtractor.extract(
 print(data?.text);
 ```
 
-> **macOS 注意事项**：使用划词提取功能需要系统授予**辅助功能权限（Accessibility）**。您可以使用以下内置的帮助方法来检测和申请该权限。
+> 💡 **macOS 注意事项**：使用划词提取功能需要系统授予**辅助功能权限（Accessibility）**。您可以使用以下内置的帮助方法在应用中轻松检测并申请该权限：
 
 ```dart
 // 检查 macOS 辅助功能是否已授权
@@ -77,13 +79,7 @@ if (!allowed) {
 
 ---
 
-## 谁在用使用它？
-
-- [Biyi (比译)](https://biyidev.com/) - 一个便捷的翻译和词典应用。
-
----
-
-## API 参考
+## 📖 API 参考
 
 ### 方法
 
@@ -100,6 +96,6 @@ if (!allowed) {
 
 ---
 
-## 许可证
+## 📄 许可证
 
-[MIT](./LICENSE)
+本项目采用 [MIT 许可证](./LICENSE) 开源。
